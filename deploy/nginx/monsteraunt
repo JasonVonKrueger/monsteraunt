@@ -2,7 +2,7 @@
 #
 # Reverse proxy for Monsteraunt (single Node process: Express + Socket.IO).
 #   App root:   /home/hosted-apps/monsteraunt
-#   Node app:   npm run build && PORT=3040 npm start   (listens on 127.0.0.1:3040)
+#   Node app:   npm run build && pm2 start ecosystem.config.cjs   (port 3040)
 #
 # Install:
 #   sudo cp deploy/nginx/monsteraunt /etc/nginx/sites-available/monsteraunt
