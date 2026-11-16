@@ -2,16 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Rooms } from "../server/src/rooms.js";
 import { RECONNECT_MS } from "../shared/constants.js";
-const dining = { name: "Raelyn", role: "dining" };
-const kitchen = { name: "Cooper", role: "kitchen" };
+const dining = { role: "dining" };
+const kitchen = { role: "kitchen" };
 test("room creation, membership, roles, capacity and token privacy", () => {
   const rooms = new Rooms();
   const { room, player } = rooms.create(dining, "a");
   assert.match(room.code, /^[A-Z2-9]{4}$/);
-  assert.throws(
-    () => rooms.join({ ...dining, code: room.code }, "b"),
-    /already here/,
-  );
   assert.throws(
     () => rooms.join({ ...kitchen, role: "dining", code: room.code }, "b"),
     /role is taken/,
@@ -33,10 +29,7 @@ test("room creation, membership, roles, capacity and token privacy", () => {
     JSON.stringify(rooms.snapshot(room)).includes(player.token),
     false,
   );
-  assert.throws(
-    () => rooms.create({ name: "Other", role: "kitchen" }, "c"),
-    /Choose/,
-  );
+  assert.throws(() => rooms.create({ role: "pantry" }, "c"), /Choose/);
 });
 test("authoritative action validation, duplicate handling and cooldown", () => {
   let now = 0;

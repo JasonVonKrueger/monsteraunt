@@ -8,12 +8,9 @@ function setup() {
   let time = 1000,
     serial = 0;
   const rooms = new Rooms({ now: () => time });
-  const { room, player: dining } = rooms.create(
-    { name: "Raelyn", role: "dining" },
-    "d",
-  );
+  const { room, player: dining } = rooms.create({ role: "dining" }, "d");
   const { player: kitchen } = rooms.join(
-    { code: room.code, name: "Cooper", role: "kitchen" },
+    { code: room.code, role: "kitchen" },
     "k",
   );
   const act = (player, type, payload = {}, actionId = `action-${++serial}`) =>

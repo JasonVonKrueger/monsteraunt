@@ -1,6 +1,5 @@
 import { randomBytes, randomInt, randomUUID } from "node:crypto";
 import {
-  NAMES,
   ROLES,
   RECONNECT_MS,
   HUG_COOLDOWN_MS,
@@ -58,19 +57,16 @@ export class Rooms {
       fail("Please check the four-letter room code.");
     return this.add(this.get(input.code), input, socketId);
   }
-  add(room, { name, role }, socketId) {
-    if (!NAMES.includes(name) || !Object.values(ROLES).includes(role))
-      fail("Choose a player and a role.");
+  add(room, { role }, socketId) {
+    if (!Object.values(ROLES).includes(role))
+      fail("Choose Dining Room or Kitchen.");
     if (room.players.size >= 2)
       fail("This restaurant already has two friends.");
-    if ([...room.players.values()].some((p) => p.name === name))
-      fail("That player is already here. Choose the other friend.");
     if ([...room.players.values()].some((p) => p.role === role))
       fail("That role is taken. Choose the other role.");
     const player = {
       id: randomUUID(),
       token: randomBytes(32).toString("hex"),
-      name,
       role,
       socketId,
       connected: true,
@@ -103,9 +99,11 @@ export class Rooms {
       code: room.code,
       bounces: room.bounces,
       game: room.game ? structuredClone(room.game) : null,
-      players: [...room.players.values()].map(
-        ({ id, name, role, connected }) => ({ id, name, role, connected }),
-      ),
+      players: [...room.players.values()].map(({ id, role, connected }) => ({
+        id,
+        role,
+        connected,
+      })),
     };
   }
   action(room, player, input) {

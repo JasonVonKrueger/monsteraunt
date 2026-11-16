@@ -15,10 +15,10 @@ Open http://localhost:5173. Vite serves the client on port 5173 and proxies Sock
 
 ## Two players
 
-1. In tab one, choose Raelyn and Dining room, then Create Restaurant.
+1. In tab one, choose Dining room, then Create Restaurant.
 2. Note the four-character restaurant code shown above the game.
 3. Open a **fresh tab** at http://localhost:5173 (do not duplicate an existing tab, which can copy its session storage).
-4. Choose Cooper and Kitchen, enter the code and tap Join. Names and roles are independent; either child can choose either role.
+4. Choose Kitchen, enter the code and tap Join. Each role can be taken by one player.
 5. Once both players are connected, the dining player taps **Open restaurant**. Either player can bounce Bubbles while waiting in the lobby.
 6. Dining: tap the visiting monster or **Welcome**. Drag the glowing menu card from the counter onto the monster; it opens the menu, reads it for about three seconds (timed by the server, so a refresh does not interrupt it) and sets it back down. Then tap **Send order**. A missed drop returns the menu with a gentle hint. Each visit brings one of eight monsters (Bubbles, Mo, Fizz, Gloop, Puff, Zuzu, Tok or Wiggles), never the same one twice in a row.
 7. Kitchen: drag each glowing ingredient onto the pizza: **dough → tomato sauce → cheese**, then the topping this monster asked for (strawberry, lemon, cookie, fish, banana or grapes). The pizza changes after each server-approved drop. Tapping an ingredient does not add it; missed drops return to the tray. Lemons, chocolate chip cookies and fish give a gentle, funny hint and leave the pizza unchanged.

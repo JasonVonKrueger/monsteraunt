@@ -37,13 +37,11 @@ test(
         false,
       );
       const created = await send(a, EVENTS.CREATE, {
-        name: "Raelyn",
         role: "dining",
       });
       assert.equal(created.ok, true);
       const joined = await send(b, EVENTS.JOIN, {
         code: created.state.code,
-        name: "Cooper",
         role: "kitchen",
       });
       assert.equal(joined.state.players.length, 2);
@@ -122,16 +120,13 @@ test(
         kitchen = await connect(),
         other = await connect();
       const created = await send(dining, EVENTS.CREATE, {
-        name: "Raelyn",
         role: "dining",
       });
       const joined = await send(kitchen, EVENTS.JOIN, {
         code: created.state.code,
-        name: "Cooper",
         role: "kitchen",
       });
       const otherRoom = await send(other, EVENTS.CREATE, {
-        name: "Raelyn",
         role: "dining",
       });
       let foreignEffects = 0;

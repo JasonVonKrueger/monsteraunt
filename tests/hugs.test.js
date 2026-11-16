@@ -8,12 +8,9 @@ test("hugs work in the lobby and every order phase without changing game state",
   let now = 1000,
     id = 0;
   const rooms = new Rooms({ now: () => now });
-  const { room, player: dining } = rooms.create(
-    { name: "Raelyn", role: "dining" },
-    "d",
-  );
+  const { room, player: dining } = rooms.create({ role: "dining" }, "d");
   const { player: kitchen } = rooms.join(
-    { code: room.code, name: "Cooper", role: "kitchen" },
+    { code: room.code, role: "kitchen" },
     "k",
   );
   const act = (player, type, payload = {}) =>
@@ -59,10 +56,7 @@ test("hugs work in the lobby and every order phase without changing game state",
 test("hugs enforce membership, deduplication and a reconnect-safe per-player cooldown", () => {
   let now = 0;
   const rooms = new Rooms({ now: () => now });
-  const { room, player } = rooms.create(
-    { name: "Raelyn", role: "dining" },
-    "a",
-  );
+  const { room, player } = rooms.create({ role: "dining" }, "a");
   const action = { type: "HUG", actionId: "hug-1" };
   assert.equal(rooms.action(room, player, action), true);
   assert.equal(rooms.action(room, player, action), false);
