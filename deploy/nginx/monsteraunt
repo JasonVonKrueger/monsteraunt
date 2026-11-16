@@ -1,84 +1,45 @@
 # /etc/nginx/sites-available/monsteraunt
 #
-# Reverse proxy for Monsteraunt (single Node process: Express + Socket.IO).
-#   App root:   /home/hosted-apps/monsteraunt
-#   Node app:   npm run build && pm2 start ecosystem.config.cjs   (port 3040)
-#
-# Install:
-#   sudo cp deploy/nginx/monsteraunt /etc/nginx/sites-available/monsteraunt
-#   sudo ln -s /etc/nginx/sites-available/monsteraunt /etc/nginx/sites-enabled/
-#   sudo nginx -t && sudo systemctl reload nginx
-#   sudo certbot --nginx -d monsteraunt.nervoussow.com   # adds HTTPS + redirect
-#
+# Monsteraunt: nginx serves the built client; Socket.IO goes to the Node app
+# run by pm2 (ecosystem.config.cjs) on 127.0.0.1:3040.
+#   Deploy: git pull && npm ci --include=dev && npm run build && pm2 restart monsteraunt
 
-# Upgrade the connection only when the client asks for a WebSocket.
-map $http_upgrade $connection_upgrade {
-    default upgrade;
-    ''      close;
-}
+server {
+    listen 443 ssl;
+    server_name monsteraunt.nervoussow.com;
 
-upstream monsteraunt_node {
-    server 127.0.0.1:3040;
-    keepalive 16;
+    root /home/hosted-apps/monsteraunt/client/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+
+    # Must match PORT in ecosystem.config.cjs. Rooms live in memory: one Node process only.
+    location /socket.io/ {
+        proxy_pass http://127.0.0.1:3040;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 75s;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/monsteraunt.nervoussow.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/monsteraunt.nervoussow.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 }
 
 server {
     listen 80;
-    listen [::]:80;
     server_name monsteraunt.nervoussow.com;
 
-    # Built client, served directly by nginx; anything not found falls through to Node.
-    root /home/hosted-apps/monsteraunt/client/dist;
-    index index.html;
-
-    client_max_body_size 1m;
-
-    access_log /var/log/nginx/monsteraunt.access.log;
-    error_log  /var/log/nginx/monsteraunt.error.log;
-
-    gzip on;
-    gzip_types text/css application/javascript application/json image/svg+xml;
-
-    # Socket.IO (long-polling + WebSocket upgrade). Rooms live in memory,
-    # so keep a single Node instance behind this upstream.
-    location /socket.io/ {
-        proxy_pass http://monsteraunt_node;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade           $http_upgrade;
-        proxy_set_header Connection        $connection_upgrade;
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_buffering off;
-        proxy_read_timeout 3600s;
-        proxy_send_timeout 3600s;
-    }
-
-    # Vite's hashed bundles: cache aggressively.
-    location /assets/ {
-        try_files $uri @node;
-        expires 30d;
-        add_header Cache-Control "public, max-age=2592000";
-    }
-
-    # index.html must not be cached, so new builds are picked up immediately.
-    location = /index.html {
-        add_header Cache-Control "no-cache";
-        try_files $uri @node;
-    }
-
-    location / {
-        try_files $uri @node;
-    }
-
-    location @node {
-        proxy_pass http://monsteraunt_node;
-        proxy_http_version 1.1;
-        proxy_set_header Connection        "";
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+    return 301 https://$host$request_uri;
 }
